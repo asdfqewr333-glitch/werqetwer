@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조선 시대 심화 학습 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        body {
+            font-family: 'Noto+Sans+KR', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .quiz-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .option-btn {
+            transition: all 0.2s;
+            text-align: left;
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+        .option-btn:hover {
+            background-color: #f0fdf4;
+            border-color: #22c55e;
+        }
+        .option-btn.correct {
+            background-color: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+        .option-btn.wrong {
+            background-color: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="start-screen" class="text-center">
+        <h1 class="text-3xl font-bold text-slate-800 mb-4">📜 조선 시대 심화 퀴즈</h1>
+        <p class="text-gray-600 mb-8">5학년 사회 교과서를 바탕으로 한 심화 문제입니다.<br>여러분의 역사 실력을 확인해보세요!</p>
+        <button onclick="startQuiz()" class="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition">시작하기</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+            <span id="progress" class="text-sm font-medium text-indigo-600">문제 1 / 10</span>
+            <span id="timer" class="text-sm font-bold text-red-500"></span>
+        </div>
+        
+        <h2 id="question" class="text-xl font-bold mb-6 text-slate-800 leading-tight"></h2>
+        
+        <div id="options" class="space-y-2">
+            <!-- Options will be inserted here -->
+        </div>
+
+        <div id="explanation" class="mt-6 p-4 bg-blue-50 rounded-lg text-blue-800 text-sm hidden">
+        </div>
+
+        <button id="next-btn" onclick="nextQuestion()" class="mt-6 w-full bg-slate-800 text-white py-3 rounded-lg font-bold hidden hover:bg-slate-900 transition">다음 문제</button>
+    </div>
+
+    <div id="result-screen" class="hidden text-center">
+        <h2 class="text-3xl font-bold mb-4">퀴즈 결과</h2>
+        <div class="text-6xl mb-6" id="score-display">0/10</div>
+        <p id="result-message" class="text-lg mb-8 font-medium"></p>
+        <button onclick="location.reload()" class="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition">다시 도전하기</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            question: "조선을 건국한 태조 이성계가 도읍지로 정한 곳은 어디인가요?",
+            options: ["개경", "한양", "평양", "공주"],
+            answer: 1,
+            explanation: "이성계는 새로운 나라의 기틀을 다지기 위해 명당으로 알려진 한양(지금의 서울)으로 도읍을 옮겼습니다."
+        },
+        {
+            question: "세종대왕 시기에 만들어진 해시계의 이름은 무엇인가요?",
+            options: ["측우기", "자격루", "앙부일구", "혼천의"],
+            answer: 2,
+            explanation: "앙부일구는 가마솥 모양의 해시계로, 백성들이 시간을 쉽게 알 수 있도록 공공장소에 설치되었습니다."
+        },
+        {
+            question: "임진왜란 당시 이순신 장군이 12척의 배로 수백 척의 일본 수군을 물리친 전투는?",
+            options: ["한산도 대첩", "명량 대첩", "노량 대첩", "진주 대첩"],
+            answer: 1,
+            explanation: "명량 대첩은 울돌목의 빠른 조류를 이용해 13척(기록에 따라 12척)의 배로 승리한 기적 같은 전투입니다."
+        },
+        {
+            question: "병자호란 때 인조가 피신하여 끝까지 항전하려 했던 산성은 어디인가요?",
+            options: ["북한산성", "수원 화성", "남한산성", "행주산성"],
+            answer: 2,
+            explanation: "청나라의 침입을 피해 인조는 남한산성으로 피신하여 45일간 버텼으나 결국 항복하게 되었습니다."
+        },
+        {
+            question: "조선 후기, 붕당 정치를 막기 위해 영조와 정조가 실시한 정책은 무엇인가요?",
+            options: ["대동법", "탕평책", "균역법", "과전법"],
+            answer: 1,
+            explanation: "탕평책은 어느 한쪽 당파에 치우치지 않고 인재를 골고루 등용하여 왕권을 강화하려 한 정책입니다."
+        },
+        {
+            question: "조선 후기 실학자 정약용이 거중기를 이용해 설계하고 세운 성곽은?",
+            options: ["한양도성", "강화산성", "수원 화성", "독산성"],
+            answer: 2,
+            explanation: "정조의 명을 받은 정약용은 과학 기술을 총동원하여 견고하고 아름다운 수원 화성을 설계했습니다."
+        },
+        {
+            question: "학문 연구 기관이자 국왕의 자문 기구로, 정조가 설치하여 개혁의 중심지로 삼은 곳은?",
+            options: ["집현전", "규장각", "서원", "성균관"],
+            answer: 1,
+            explanation: "정조는 규장각을 설치하여 젊고 유능한 학자들을 등용하고 자신의 개혁 정치를 뒷받침하게 했습니다."
+        },
+        {
+            question: "조선 시대 신분 제도 중 기술직(의관, 역관 등)에 종사하며 중간 계층을 형성한 신분은?",
+            options: ["양반", "중인", "상민", "천민"],
+            answer: 1,
+            explanation: "중인은 양반과 상민 사이에 위치하며 전문적인 기술이나 행정 업무를 담당했습니다."
+        },
+        {
+            question: "조선 후기 백성들의 세금 부담을 줄여주기 위해 특산물 대신 쌀로 세금을 내게 한 법은?",
+            options: ["영정법", "직전법", "대동법", "호포제"],
+            answer: 2,
+            explanation: "대동법은 집집마다 바치던 특산물 대신 토지 결수에 따라 쌀이나 면포, 돈으로 내게 하여 백성들의 고통을 덜어주었습니다."
+        },
+        {
+            question: "조선 전기에 제작된 우리나라 최초의 독자적인 역법서(달력 계산법)는?",
+            options: ["칠정산", "동의보감", "목민심서", "경국대전"],
+            answer: 0,
+            explanation: "칠정산은 세종 때 한양을 기준으로 천체 운동을 계산하여 만든 우리나라 최초의 달력 계산법입니다."
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = quizData[currentQuestion];
+        document.getElementById('progress').innerText = `문제 ${currentQuestion + 1} / ${quizData.length}`;
+        document.getElementById('question').innerText = q.question;
+        
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index);
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('explanation').classList.add('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        answered = false;
+    }
+
+    function checkAnswer(selectedIndex) {
+        if (answered) return;
+        answered = true;
+
+        const q = quizData[currentQuestion];
+        const buttons = document.querySelectorAll('.option-btn');
+        const expDiv = document.getElementById('explanation');
+        
+        if (selectedIndex === q.answer) {
+            buttons[selectedIndex].classList.add('correct');
+            score++;
+        } else {
+            buttons[selectedIndex].classList.add('wrong');
+            buttons[q.answer].classList.add('correct');
+        }
+
+        expDiv.innerText = q.explanation;
+        expDiv.classList.remove('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        const scoreDisplay = document.getElementById('score-display');
+        scoreDisplay.innerText = `${score} / ${quizData.length}`;
+        
+        const resultMsg = document.getElementById('result-message');
+        if (score === 10) {
+            resultMsg.innerText = "대단해요! 조선 시대 역사 박사님이시네요! 🎉";
+            resultMsg.className = "text-lg mb-8 font-bold text-green-600";
+        } else if (score >= 7) {
+            resultMsg.innerText = "훌륭합니다! 조선 시대에 대해 아주 잘 알고 있군요! 👍";
+            resultMsg.className = "text-lg mb-8 font-bold text-blue-600";
+        } else {
+            resultMsg.innerText = "조금 더 복습하면 완벽해질 거예요. 다시 한 번 도전해볼까요? 😊";
+            resultMsg.className = "text-lg mb-8 font-bold text-amber-600";
+        }
+    }
+</script>
+
+</body>
+</html>
